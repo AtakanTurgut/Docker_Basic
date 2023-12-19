@@ -32,7 +32,7 @@ hello there
 ```
 
 ```cs
-docker volume inspect volume1		//== docker info  -> volumeName deyaları gösterir
+docker volume inspect volume1		//== docker info  -> volumeName detayları gösterir
 
 [
     {
