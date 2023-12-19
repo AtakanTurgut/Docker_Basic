@@ -60,6 +60,7 @@ docker images
 docker run --name my-ubuntu -p 80:80 -d by-ubuntu
 ----
 vi Dockerfile
+
 	FROM nginx
 	RUN rm /etc/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 	COPY content /usr/share/nginx/html
@@ -171,6 +172,7 @@ docker push atakanturgut/bydockerlearnpublic:my-app-large
 ```cs
 -- 2 --
 vi Dockerfile
+
 	FROM ubuntu
   	RUN apt-get -y update
   	RUN apt-get -y upgrade
