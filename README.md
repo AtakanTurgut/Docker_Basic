@@ -1,257 +1,79 @@
-## Docker Compose basic commands
-
-#### Install the Docker Compose plugin
+## Docker basic commands 
+kapsayıcı == container
 ```cs
-sudo apt-get update
-sudo apt-get upgrade
-
-sudo apt-get install \
-> apt-transport-https \
-> ca-certificates \
-> curl \
-> gnupg-agent \
-> software-properties-common -y
-
-sudo curl -L https://github.com/docker/compose/releases/download/1.24.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-docker-compose --version
-docker-compose --help
-```
-
-### .yml
-```yml
--- 1 --
-vi docker-compose.yml
-
-    version: '2'
-  	services:
-  	    nginx-service:
-  	     build: ./WebSite
-  	     depends_on:
-  	     - ruby-service
-  	     
-  	   ruby-service:
- 	     build: ./WebApp
- 	     depends_on:
- 	     - redis-service
- 	     
- 	   redis-service:
- 	     image: redis               ^C :wq
+    atakan@codebind:~$ sudo apt update;sudo apt upgrade
+    atakan@codebind:~$ sudo apt install docker.io
+    atakan@codebind:~$ sudo systemctl enable --now docker
+    atakan@codebind:~$ docker --version
+    atakan@codebind:~$ sudo docker run hello-world
+    atakan@codebind:~$ docker ps -a		                // çalışan kapsayıcılar görünür
+    atakan@codebind:~$ sudo docker run -it ubuntu bash
+    root@212c24d1f5:/# apt-get update
 ```
 ```cs
-mkdir WebSite
-mkdir WebApp
+    docker info
+    docker ps	                                        // çalışan kapsayıcılar listesi
+    docker ps -a	                                    // bütün kapsayıcılar
+    docker run centos:7 echo "Hello World"
+    docker run centos:7 ps -ef
 
-cd WebSite
-vi Dockerfile
-	FROM nginx:latest
-cd ..
-cd WebApp
-vi Dockerfile
-	FROM ruby
-
-cd ..
-docker-compose up
-```
------
-```cs
--- 2 --
-mkdir docker-compose/build
-cd docker-compose/build/
-```
-```yml
-vi Dockerfile
-
-  FROM nginx:alpine
-  RUN echo "Welcome to Docker Wrokshop!" > /usr/share/nginx/html/index.html
-  CMD ["nginx", "-g", "daemon off;"]
-
-vi docker-compose.yml
-
-  version: "3.7"
-  services:
-    webapp:
-      build:
-        context: .
-        dockerfile: Dockerfile
-      image: webapp:v1
+    docker container ls                                 // çalışan kapsayıcılar listesi
+    docker container ls -a                              // bütün kapsayıcılar
 ```
 ```cs
-docker-compose build
-docker image ls
-```
------
-```yml
--- 3 --
-vi docker-compose.yml
+    docker container run -it centos:7 bash	            // yeni kapsayıcı ekler
+    root@c70f44250d/j# yum -y update
+    root@c70f44250d/j# ls -l
+    root@c70f44250d/j# echo "I'm here" > test.txt
+    root@c70f44250d/j# cat test.txt			            // test.txt'yi oku
+    root@c70f44250d/j# exit                             // kapsayıcıdan çıkar
 
-  version: "3"
-  services:
-    elasticsearch:
-      image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
-      environment:
-        - discovery.type=single-node
-      ports:
-        - 9200:9200
-  
-    kibana:
-      image: docker.elastic.co/kibana/kibana:7.0.0
-      ports:
-        - 5601:5601    
+    docker container start containerId		            // kapsayıcıyı başlatır
+    docker container exec containerId ps -ef	        // kapsayıcıya bağlanır
+    docker container exec -it containerId bash
 
-docker-compose up
-```
------
-```cs
--- 4 --
-mkdir MyApp
-cd MyApp
+    docker container ls -a --no-trunc	                // kapsayıcıların detaylı gösterimi
+    docker container ls -a -q		                    // kapsayıcıların sadece id'lerini gösterir
+    docker container ls -l			                    // son oluşturulmuş kapsayıcı bilgisi verilir
+    docker container ls -a --filter ""	                // kapsayıcıları aranan duruma göre filtreler
 
-openssl rand -base64 32 > db_password.txt
-openssl rand -base64 32 > db_root_password.txt
-cat db_password.txt
-```
-```yml
-vi docker-compose.yml
-
-  version: '3.1'
-  services:
-    #Nginx Service
-      webserver:
-        image: nginx:alpine
-        container_name: webserver
-        restart: unless-stopped
-        ports:
-          - "80:80"
-          - "443:443"
-    #Mysql DB
-      db:
-        image: mysql:5.7
-        container_name: Mysqldb
-        restart: unless-stopped
-        volumes:
-          - db_data:/var/lib/mysql
-        ports:
-          - "3306:3306"
-        environment:
-          MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
-          MYSQL_DATABASE: wordpress
-          MYSQL_USER: wordpress
-          MYSQL_PASSWORD_FILE: /run/secrets/db_password
-        secrets:
-          - db_root_password
-          - db_password
-  secrets:
-    db_password:
-      file: db_password.txt
-    db_root_password:
-      file: db_root_password.txt
-  
-  volumes:
-    db_data:					^C :wq
+    docker container run centos:7 ping 127.0.0.1 -c 10	// kapsayıcı 10 ping çalışır kendisini kapatır
+    docker container run -d centos:7 ping 127.0.0.1		// kapsayıcı çalışmaya devam eder
+    docker container logs containerId			        // kapsayıcının çıktılarını verir
+    docker container attach containerId			        // canlı olarak kapsayıcı takibi sağlar - çıkılırsa exit moda düşer
+    docker container logs --tail 10 containerId		    // son kaç log görünecekse kullanılır
+    docker container logs -f containerId			    // kapsayıcının canlı logları takip edilir
 ```
 ```cs
-docker-compose up
-docker-compose ps -a
-docker-compose logs
+    docker container run -d tomcat		                // tomcat image çalışmaya başlar
+    docker container stop containerId	                // kapsayıcıyı durdurur
 
-docker-compose start db 	    // SERVICE Name
-docker-compose start webserver
+    docker container start -a containerId	            // kapsayıcıya direkt attack olunur
+    docker container start containerId	                // kapsayıcıyı arkada çalıştırır - çıkıldığı durumda çalışmaya devam eder
+    docker container kill containerId	                // kapsayıcıyı komple durdurur
+    docker container inspect containerId	            // kapsayıcı detayları
+    docker container inspect containerId | grep IPAddress
+    docker container stop containerId	                // kapsayıcı durdurulur
+    docker container rm containerId		                // oluşturulan kapsayıcıyı kaldırır
+---
+    docker container run -d nginx		
+    docker container run -d -p 5000:80 nginx	        // kapsayıcıya port ekler (hostport:containerport)
+    docker container port containerId	                // kapsayıcı port bilgileri 	
+
+    vi Dockerfile	                                    // docker file oluşturur
+	    FROM nginx
+	    EXPOSE 80		^C :wq
+
+    docker image build -t my_nginx
+    docker container run -d -p my_nginx
+
+    docker plugin install grafana/loki-docker-driver	        // plugin ekler
+    docker plugin ls					                        // plugin listeler
+    docker plugin disable containerId			                // plugini disable eder
+    docker plugin enable grafana/loki-docker-driver:latest		// plugini enable eder
+    docker plugin inspect grafana/loki-docker-driver:latest		// pluginin detayları
+    docker plugin rm grafana/loki-docker-driver:latest		    // plugin kaldırır
 ```
------
-```cs
--- 5 --
-mkdir -p wordpress-compose 
-touch docker-compose.yml
 
-mkdir -p nginx/
-mkdir -p db-data/
-mkdir -p logs/nginx/
-mkdir -p wordpress/
-```
-```cs
-vim nginx/wordpress.conf
 
-  server {
-    listen 80;
-    server_name localhost;
-    root /var/www/html;
-    index index.php;
-   
-    access_log /var/log/nginx/localhost-access.log;
-    error_log /var/log/nginx/localhost-error.log;
-   
-    location /{
-      try_files $uri $uri/ /index.php?$args;
-    }
-   
-    location ~ \.php$ {
-      try_files $uri = 404;
-      fastcgi_split_path_info ^(.+\.php)(/.+)$;
-      fastcgi_pass wordpress:9000;
-      fastcgi_index index.php;
-      include fastcgi_params;
-      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-      fastcgi_param PATH_INFO $fastcgi_path_info;
-    }
-  }
-```
-```yml
-vim docker-compose.yml
-
-  version: '2.6'
-  services:
-    nginx:
-      container_name: webserver
-      image: nginx:latest
-      ports:
-        - '80:80'
-      volumes:
-        - ./nginx:/etc/nginx/conf.d
-        - ./logs/nginx:/var/log/nginx
-        - ./wordpress:/var/www/html
-      links:
-        - wordpress
-      restart: always
-    mysql:
-      container_name: dbserver
-      image: mariadb
-      ports:
-        - '3306:3306'
-      volumes:
-        - ./db-data:/var/lib/mysql
-      environment:
-        - MYSQL_ROOT_PASSWORD=aqwe123
-      restart: always
-    wordpress:
-      container_name: wpserver
-      image: wordpress:4.7.1-php7.0-fpm
-      ports:
-        - '9000:9000'
-      volumes:
-        - ./wordpress:/var/www/html
-      environment:
-        - WORDPRESS_DB_NAME=wpdb
-        - WORDPRESS_TABLE_PREFIX=wp_
-        - WORDPRESS_DB_HOST=mysql
-        - WORDPRESS_DB_PASSWORD=aqwe123
-      links:
-        - mysql
-```
-```cs
-cd ~/wordpress-compose/
-
-docker-compose up -d
-docker-compose ps
-docker-compose logs nginx
-docker-compose logs mysql
-docker-compose logs wordpress
-
-netstat -plntu	                // hareketli portlar kontrol edilir
-
-docker-compose ls
-docker container ls
-```
------
 [labs.play-with-docker](https://labs.play-with-docker.com/)
