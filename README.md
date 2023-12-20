@@ -21,6 +21,4 @@ docker-compose --help
 
 -----
 
-
-
 [labs.play-with-docker](https://labs.play-with-docker.com/)
