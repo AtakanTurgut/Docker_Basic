@@ -20,5 +20,42 @@ docker-compose --help
 ```
 
 -----
+#### .yml
+```yml
+vi docker-compose.yml
+
+	version: '2'
+  	 
+  	services:
+  	    nginx-service:
+  	     build: ./WebSite
+  	     depends_on:
+  	     - ruby-service
+  	     
+  	   ruby-service:
+ 	     build: ./WebApp
+ 	     depends_on:
+ 	     - redis-service
+ 	     
+ 	   redis-service:
+ 	     image: redis               ^C :wq
+```
+```cs
+mkdir WebSite
+mkdir WebApp
+
+cd WebSite
+vi Dockerfile
+	 FROM nginx:latest
+cd ..
+cd WebApp
+vi Dockerfile
+	FROM ruby
+
+cd ..
+docker-compose up
+```
+
+-----
 
 [labs.play-with-docker](https://labs.play-with-docker.com/)
