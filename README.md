@@ -238,13 +238,14 @@ vim docker-compose.yml
         - WORDPRESS_DB_PASSWORD=aqwe123
       links:
         - mysql
+      restart: always
 ```
 ```cs
 cd ~/wordpress-compose/
 
 docker-compose up -d
 docker-compose ps
-docker-compose logs nginx
+docker-compose logs nginx       // SERVICE Name
 docker-compose logs mysql
 docker-compose logs wordpress
 
@@ -253,5 +254,122 @@ netstat -plntu	                // hareketli portlar kontrol edilir
 docker-compose ls
 docker container ls
 ```
------
+
+### Docker Scale
+```cs
+docker-compose up -d --scale mysql=1	    // docker'da scale mimarisi oluşturur
+docker-compose ps
+docker-compose logs mysql
+
+// scale edilmeden önce kapsayıcı host aralığı belirtilmelidir  !!!
+docker-compose up -d --scale nginx=3	    // 3 replika sayısı
+```
+```yml
+vim docker-compose.yml
+
+  version: '2.6'
+  services:
+    nginx:
+      container_name: webserver
+      image: nginx:latest
+      ports:
+        - '85-87:80'				    # 85 86 87 - 3 replika ^
+      volumes:
+        - ./nginx:/etc/nginx/conf.d
+        - ./logs/nginx:/var/log/nginx
+        - ./wordpress:/var/www/html
+      links:
+        - wordpress
+      restart: always
+    mysql:
+      container_name: dbserver
+      image: mariadb
+      ports:
+        - '3310-3312:3306'			    # 10 11 12 - 3 replika ^
+      volumes:
+        - ./db-data:/var/lib/mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=aqwe123
+      restart: always
+    wordpress:
+      container_name: wpserver
+      image: wordpress:4.7.1-php7.0-fpm
+      ports:
+        - '9010-9012:9000'			    # 10 11 12 - 3 replika ^
+      volumes:
+        - ./wordpress:/var/www/html
+      environment:
+        - WORDPRESS_DB_NAME=wpdb
+        - WORDPRESS_TABLE_PREFIX=wp_
+        - WORDPRESS_DB_HOST=mysql
+        - WORDPRESS_DB_PASSWORD=aqwe123
+      links:
+        - mysql
+      restart: always
+```
+```cs
+docker-compose up -d
+docker-compose up -d --scale mysql=3
+// belirtilen aralıktan fazla sayıda replika oluşturulamaz
+docker-compose up -d --scale nginx=3
+
+// bir scale işleminden sonra tekrar scale yapılırsa önceki replikalar sıfırlanır
+// bu durumda birbiriyle entegre sistemlerde aynı anda scale edilmelidir
+docker-compose up -d --scale nginx=3 --scale mysql=3 --scale wordpress=3
+```
+```yml
+# .yml içerisinde scale işlemi gerçekleştirmek istersek    !!!
+vim docker-compose.yml
+
+  version: '2.6'
+  services:
+    nginx:
+      container_name: webserver
+      image: nginx:latest
+      ports:
+        - '85-87:80'				
+      volumes:
+        - ./nginx:/etc/nginx/conf.d
+        - ./logs/nginx:/var/log/nginx
+        - ./wordpress:/var/www/html
+      links:
+        - wordpress
+      restart: always
+      deploy: 
+	replicas: 3
+    mysql:
+      container_name: dbserver
+      image: mariadb
+      ports:
+        - '3310-3312:3306'			
+      volumes:
+        - ./db-data:/var/lib/mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=aqwe123
+      restart: always
+      deploy: 
+	replicas: 3
+    wordpress:
+      container_name: wpserver
+      image: wordpress:4.7.1-php7.0-fpm
+      ports:
+        - '9010-9012:9000'			
+      volumes:
+        - ./wordpress:/var/www/html
+      environment:
+        - WORDPRESS_DB_NAME=wpdb
+        - WORDPRESS_TABLE_PREFIX=wp_
+        - WORDPRESS_DB_HOST=mysql
+        - WORDPRESS_DB_PASSWORD=aqwe123
+      links:
+        - mysql
+      restart: always
+      deploy: 
+	replicas: 3
+```
+```cs
+docker-compose up -d
+docker-compose ps
+```
+
 [labs.play-with-docker](https://labs.play-with-docker.com/)
