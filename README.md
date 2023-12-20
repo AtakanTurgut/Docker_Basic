@@ -45,7 +45,7 @@ mkdir WebApp
 
 cd WebSite
 vi Dockerfile
-	 FROM nginx:latest
+	FROM nginx:latest
 cd ..
 cd WebApp
 vi Dockerfile
