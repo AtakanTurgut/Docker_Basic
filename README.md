@@ -72,7 +72,7 @@ docker container exec -it network2-1 bash
 	64 bytes from 192.168.100.3: icmp_seq=1 ttl=64 time=0.069 ms
 ```
 
-### Docker Volume Delete
+### Docker Network Delete
 ```cs
 // network'de herhangi bir kapsayıcı bulunuyorsa bu kapsayıcı muhakkak ki silinmelidir
 // aksi taktirde network silinmez - kapsayıcının aktif ya da pasif olması farketmez
@@ -93,6 +93,13 @@ docker network prune 					            // kullanılmayan networkler'i ortadan kal
 	testatnetwork
 
 docker network ls
+```
+
+### Docker Network Mac Vlan
+```cs
+docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eth0 macvlan-mynet
+docker network ls
+docker network inspect macvlan-mynet 
 ```
 
 [labs.play-with-docker](https://labs.play-with-docker.com/)
