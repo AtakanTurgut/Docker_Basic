@@ -24,8 +24,7 @@ docker-compose --help
 ```yml
 vi docker-compose.yml
 
-	version: '2'
-  	 
+    version: '2'
   	services:
   	    nginx-service:
   	     build: ./WebSite
