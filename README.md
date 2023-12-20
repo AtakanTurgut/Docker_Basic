@@ -336,7 +336,7 @@ vim docker-compose.yml
         - wordpress
       restart: always
       deploy: 
-	replicas: 3
+        replicas: 3
     mysql:
       container_name: dbserver
       image: mariadb
@@ -348,7 +348,7 @@ vim docker-compose.yml
         - MYSQL_ROOT_PASSWORD=aqwe123
       restart: always
       deploy: 
-	replicas: 3
+        replicas: 3
     wordpress:
       container_name: wpserver
       image: wordpress:4.7.1-php7.0-fpm
@@ -365,7 +365,7 @@ vim docker-compose.yml
         - mysql
       restart: always
       deploy: 
-	replicas: 3
+        replicas: 3
 ```
 ```cs
 docker-compose up -d
