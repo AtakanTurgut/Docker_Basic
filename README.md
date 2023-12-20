@@ -1,249 +1,98 @@
-## Docker Volume basic commands
+## Docker Network basic commands
 
 ```cs
-docker volume create --name volume1		// volume oluşturur
+docker network ls			        // network listesi
+docker network inspect bridge		// detayları gösterir
+```
+```cs
+docker run centos /usr/sbin/ip route
+	default	via
 ```
 
 ```cs
-[node1] (local) root@192.168.0.13 /
-$ cd /var/lib/dockervolumes/
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes
-$ ls
-backingFsBlockDev  metadata.db        volume1
+docker run -it centos bash
+	ctrl + p + q
+docker ps
+docker network inspect bridge
 
-docker container run -it -v volume1:/www/website centos:7 bash
+docker network create testnetwork
+docker network ls
+docker network inspect testnetwork
 
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes
-cd /volume1/_data
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data
-$ ls
-volume1.txt
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data
-$ cat volume1.txt 
-hello there
+docker container run -it --net testnetwork centos bash
+	ctrl + p + q
+docker network inspect testnetwork
 
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data
-$ docker container run --name volume1  -it -v volume1:/www/website centos:7 bash
-[root@14b90764ff87 /]# cd /www/website/
-[root@14b90764ff87 website]# ls
-volume1.txt
-[root@14b90764ff87 website]# cat volume1.txt 
-hello there
-```
+docker container run -it --net testnetwork centos bash
+	ctrl + p + q
+docker network inspect testnetwork
 
-```cs
-docker volume inspect volume1		//== docker info  -> volumeName detayları gösterir
-
-[
-    {
-        "CreatedAt": "2023-12-19T19:21:54Z",
-        "Driver": "local",
-        "Labels": null,
-        "Mountpoint": "/var/lib/docker/volumes/volume1/_data",
-        "Name": "volume1",
-        "Options": null,
-        "Scope": "local"
-    }
-]
-```
-
-```cs
-[node1] (local) root@192.168.0.13 /
-$ cd var/lib/docker/volumes/volume1/_data/
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data
-$ mkdir attest
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data
-$ cd attest/
-
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data/attest
-$ echo 'attest there' > attest.txt 
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data/attest
-$ cd ..
-
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/volume1/_data
-$ docker container run -it -v volume1:/www/html centos:7 bash
-
-[root@73f877880c56 /]# cd www/html/
-[root@73f877880c56 html]# ls
-attest  volume1.txt
-[root@73f877880c56 html]# cd attest
-[root@73f877880c56 attest]# cat attest.txt 
-attest there
-```
-
-### ReadOnly Volume
-
-```cs
-docker volume create nginx_logs
-
-docker container run -it -v nginx_logs:/data/mylogs:ro
-
-[node1] (local) root@192.168.0.13 /
-$ docker container run -it -v nginx_logs:/data/mylogs:ro centos:7 bash
-
-[root@e82c98e3551f /]# cd /data/mylogs/
-[root@e82c98e3551f mylogs]# touch test.txt
-	touch: cannot touch 'test.txt': Read-only file system
-
-[node1] (local) root@192.168.0.13 /
-$ cd var/lib/docker/volumes/nginx_logs/_data/
-
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/nginx_logs/_data
-$ ls
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/nginx_logs/_data
-$ touch test.txt
-
-[node1] (local) root@192.168.0.13 /var/lib/docker/volumes/nginx_logs/_data
-$ vi test.txt
-
-	rw
-	ro		^C :wq
-
----
 docker container exec -it containerId bash
-cd /data/mylogs/
-cat test.txt
-
----
-	^ctrl + p + q	            // exit demeden arka planda kapsayıcıyı açık bırakarak çıkış yapılabilir
+[root@6cb3eeae8fc2 /]# ping 172.19.0.3
+	PING 172.19.0.3 (172.19.0.3) 56(84) bytes of data.
+	64 bytes from 172.19.0.3: icmp_seq=1 ttl=64 time=0.191 ms
 ```
 ```cs
-docker volume ls
+docker network create --subnet 192.168.100.0/24 --gateway 192.168.100.1 test2network
+docker network ls
+docker network inspect test2network
+docker container run --net test2network -it centos bash
 
-docker container run -d -P --name nginx_server -v ~/public_html:/usr/share/nginx/html -v nginx_logs:/var/log/nginx nginx
-docker container exec -it nginx_server bash
-
-root@4e603363e490:/# cd var/log/nginx/ 
-root@4e603363e490:/var/log/nginx# ls
-access.log  error.log  test.txt  text.txt
-
-root@4e603363e490:/var/log/nginx#  
-	tail -f access.log	                // log kayıtlarını görebiliriz
-	tail -f error.log
-
-tail -f /var/lib/docker/volumes/nginx_logs/_data/access.log
-tail -f /var/lib/docker/volumes/nginx_logs/_data/error.log
+[root@5ae600eae010 /]# ctrl + p + q
+docker network inspect test2network
 ```
-
-### Volume operation with Dockerfile
-
-```cs
-vi Dockerfile
-    FROM ubuntu
-    RUN apt-get -y update
-    RUN apt-get -y upgrade
-    RUN apt-get -y install nano
-    RUN mkdir /data
-    WORKDIR /data
-    RUN echo "Dockerfile example volume." > test.txt
-    VOLUME /data					^C :wq
-
-docker build -t atakan:1 .
-docker volume create image
+```
+default:
+docker network create --driver null test3network
+docker network create --driver host test3network
 ```
 ```cs
-[node1] (local) root@192.168.0.8 ~
-$ docker container run -v image:/data -it atakan:1 bash
-root@7cc683429625:/data# ls
-test.txt
-root@7cc683429625:/data# cat test.txt
-Dockerfile example volume.
-root@7cc683429625:/data# exit
+docker container run --name network -it -d centos
+docker container run --name network-2 -it -d centos
+docker container inspect network
 
-docker volume inspect image
+docker container run --name network-0 --network=testnetwork -it -d centos
+docker container run --name network-1 --network=testnetwork -it -d centos
+docker container inspect network-1
 
-[
-    {
-        "CreatedAt": "2023-12-19T21:02:35Z",
-        "Driver": "local",
-        "Labels": null,
-        "Mountpoint": "/var/lib/docker/volumes/image/_data",
-        "Name": "image",
-        "Options": null,
-        "Scope": "local"
-    }
-]
-```
-```cs
-[node1] (local) root@192.168.0.8 ~
-$ cd /var/lib/docker/volumes/image/_data/
-[node1] (local) root@192.168.0.8 /var/lib/docker/volumes/image/_data
-$ ls
-test.txt
-[node1] (local) root@192.168.0.8 /var/lib/docker/volumes/image/_data
-$ cat test.txt 
-Dockerfile example volume.
+docker container run --name network2-1 --network=test2network -it -d centos
+docker container run --name network2-2 --network=test2network -it -d centos
+docker container inspect network2-2
 ```
 
-### Docker Volume External
 ```cs
-docker volume create --opt type=nfs --opt o=addr=192.168.1.10,rw,nfsserver4 --opt device=:/home/nfsshare nfs-volume
-```
-```cs
-[node1] (local) root@192.168.0.8 /
-$ docker volume ls 
-DRIVER    VOLUME NAME
-local     image
-local     nfs-volume
+docker ps
+docker container exec -it network bash
+[root@cbb233252119 /]# ping 192.168.100.2
+	PING 192.168.100.2 (192.168.100.2) 56(84) bytes of data.	// iletişim kuramaz
 
-[node1] (local) root@192.168.0.8 /
-$ docker volume inspect nfs-volume 
-
-[
-    {
-        "CreatedAt": "2023-12-19T21:14:20Z",
-        "Driver": "local",
-        "Labels": null,
-        "Mountpoint": "/var/lib/docker/volumes/nfs-volume/_data",
-        "Name": "nfs-volume",
-        "Options": {					@*<--*@
-            "device": ":/home/nfsshare",
-            "o": "addr=192.168.1.10,rw,nfsserver4",
-            "type": "nfs"
-        },
-        "Scope": "local"
-    }
-]
-
-[node1] (local) root@192.168.0.8 /
-$ docker volume inspect image
-
-[
-    {
-        "CreatedAt": "2023-12-19T21:02:35Z",
-        "Driver": "local",
-        "Labels": null,
-        "Mountpoint": "/var/lib/docker/volumes/image/_data",
-        "Name": "image",
-        "Options": null,
-        "Scope": "local"
-    }
-]
-
-docker run -it -v nfs-volume:/nfsshare centos
+docker container exec -it network2-1 bash
+[root@67f3bb12d6e4 /]# ping 192.168.100.3
+	PING 192.168.100.3 (192.168.100.3) 56(84) bytes of data.	// iletişim olur
+	64 bytes from 192.168.100.3: icmp_seq=1 ttl=64 time=0.069 ms
 ```
 
 ### Docker Volume Delete
 ```cs
-// volume'de herhangi bir kapsayıcı bulunuyorsa bu kapsayıcı muhakkak ki silinmelidir
-// aksi halde volume silinmez - kapsayıcının aktif ya da pasif olması farketmez
+// network'de herhangi bir kapsayıcı bulunuyorsa bu kapsayıcı muhakkak ki silinmelidir
+// aksi taktirde network silinmez - kapsayıcının aktif ya da pasif olması farketmez
 
-docker volume rm imageName
-	Error response from daemon: remove image: volume is in use - [7cc683429625dcb4c581d527b2bc606d2afa1624cc637cbc68a66f2fb561d6ca]
+docker network rm testnetwork
+	Error response from daemon: error while removing network: network testnetwork id 8327fd09d09eb1c5e20efe67df4c72c61c714d04e085f934cdc3ed187cd198b0 has active endpoints
+
+docker network inspect testnetwork
 ```
+
 ```cs
-[node1] (local) root@192.168.0.8 /
-$ docker container run -it -v image:/data centos bash
-[root@58a60f2f4f72 /]# 
-                        ^ctrl + p + q
+docker network create testatnetwork
 
+docker network prune 					            // kullanılmayan networkler'i ortadan kaldırır
+	WARNING! This will remove all custom networks not used by at least one container.
+	Are you sure you want to continue? [y/N] y
+	Deleted Networks:
+	testatnetwork
 
-docker container stop containerId           // kapsayıcı durdurulsa da volume silinmez
-docker container ls 
-docker container rm containerId
-
-docker volume rm imageName
-docker volume ls
+docker network ls
 ```
 
 [labs.play-with-docker](https://labs.play-with-docker.com/)
