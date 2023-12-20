@@ -20,7 +20,7 @@ docker-compose --help
 ```
 
 -----
-#### .yml
+### .yml
 ```yml
 vi docker-compose.yml
 
@@ -54,7 +54,51 @@ vi Dockerfile
 cd ..
 docker-compose up
 ```
-
 -----
+```cs
+mkdir docker-compose/build
+cd docker-compose/build/
+```
+```yml
+vi Dockerfile
+
+  FROM nginx:alpine
+  RUN echo "Welcome to Docker Wrokshop!" > /usr/share/nginx/html/index.html
+  CMD ["nginx", "-g", "daemon off;"]
+
+vi docker-compose.yml
+
+  version: "3.7"
+  services:
+    webapp:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      image: webapp:v1
+```
+```cs
+docker-compose build
+docker image ls
+```
+-----
+```yml
+vi docker-compose.yml
+
+  version: "3"
+  services:
+    elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+      environment:
+        - discovery.type=single-node
+      ports:
+        - 9200:9200
+  
+    kibana:
+      image: docker.elastic.co/kibana/kibana:7.0.0
+      ports:
+        - 5601:5601    
+
+docker-compose up
+```
 
 [labs.play-with-docker](https://labs.play-with-docker.com/)
