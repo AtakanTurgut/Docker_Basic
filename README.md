@@ -79,5 +79,12 @@ docker stack deploy --compose-file=portainer-agent-stack.yml portainer
   username: admin
   passwor : 1-9
 ```
+#### [Docker Swarm Sematext Monitoring](https://sematext.com/container-monitoring/)
+```cs
+docker pull sematext/sematext-agent-docker
+> //../apps.eu.sematext.com/ui/..
+
+docker ps
+```
 
 [labs.play-with-docker](https://labs.play-with-docker.com/)
