@@ -86,7 +86,9 @@ docker pull sematext/sematext-agent-docker
 
 docker ps
 ```
+
 ------------
+
 ### Docker Swarm Stack
 ```yml
 vi docker_stack.yml 
@@ -189,7 +191,118 @@ docker stack services voteapplication 				// service'ler
 ```
 
 ### Docker Swarm Secret
+```cs
+-- 1 --
+openssl rand -base64 12 | docker secret create db_root_password -
+openssl rand -base64 12 | docker secret create db_dba_password -
 ```
+```cs
+docker secret ls
+docker secret inspect db_root_password  // oluşturulan scret key'in özellikleri
 ```
+```yml
+vim docker-compose.yml
+
+  version: "3.3"
+  services:
+    db:
+      image: mysql
+      secrets:
+        - db_root_password
+        - db_dba_password
+      deploy:
+        replicas: 1
+        placement:
+          constraints: [node.role == manager]
+        resources:
+          reservations:
+            memory: 128M
+          limits:
+            memory: 256M
+      ports:
+        - 3306:3306
+      environment:
+        MYSQL_USER: dba
+        MYSQL_DATABASE: mydb
+        MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+        MYSQL_PASSWORD_FILE: /run/secrets/db_dba_password
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - type: bind
+          source: /opt/docker/volumes/mysql
+          target: /var/lib/mysql
+    adminer:
+      image: adminer
+      ports:
+        - 8080:8080
+  secrets:
+    db_root_password:
+      external: true
+    db_dba_password:
+      external: true			^C :wq
+```
+```cs
+mkdir -p /opt/docker/volumes/mysql
+docker stack deploy -c docker-compose.yml appnet
+docker network ls
+
+ls /opt/docker/volumes/mysql
+docker exec -it $(docker ps -f name=appnet_db -q) ls /run/secrets/
+docker exec -it $(docker ps -f name=appnet_db -q) cat /run/secrets/db_root_password
+```
+```cs
+docker exec -it $(docker ps -f name=appnet_db -q) mysql -u root -p	// root kullanıcısı ile mysql'e bağlanır
+	Password:
+	mysql> show databases;
+	mysql> create database db_net;
+```
+
+```cs
+-- 2 --
+docker node ls
+
+openssl rand -base64 20 | docker secret create root_db_password -
+openssl rand -base64 20 | docker secret create wp_db_password -
+
+docker network create -d overlay wp
+```
+```cs
+docker service create 
+	--name mariadb 
+	--replicas 1 	
+	--constraint 'node.role==manager' 
+	--network wp 
+	--secret source=root_db_password,target=root_db_password 
+	--secret source=wp_db_password,target=wp_db_password 
+	-e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_db_password 
+	-e MYSQL_PASSWORD_FILE=/run/secrets/wp_db_password 	
+	-e MYSQL_USER=wp 
+	-e MYSQL_DATABASE=wp 
+	mariadb:10.1
+
+
+docker service ps mariadb
+```
+
+```cs
+docker service create 
+	--name wp 	
+	--constraint=node.role==worker1 
+	--replicas 1 	
+	--network wp 
+	--publish 80:80 
+	--secret source=wp_db_password,target=wp_db_password,mode=04400 
+	-e WORDPRESS_DB_USER=wp 
+	-e WORDPRESS_DB_PASSWORD_FILE=/run/secrets/wp_db_password 
+	-e WORDPRESS_DB_HOST=mariadb 
+	-e WORDPRESS_DB_NAME=wp 
+	wordpress:4.7
+
+
+docker service ps wp
+
+> 80 port click - wordpress
+```
+----------
 
 [labs.play-with-docker](https://labs.play-with-docker.com/)
