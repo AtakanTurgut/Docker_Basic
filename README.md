@@ -51,7 +51,7 @@ docker service ps servicenot
 docker service ls
 ```
 -----------
-### Docker Swarm Tools
+## Docker Swarm Tools
 #### [Docker Swarm Visualizer](https://github.com/dockersamples/docker-swarm-visualizer)
 ```cs
 docker service create \
