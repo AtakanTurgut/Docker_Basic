@@ -256,7 +256,7 @@ docker exec -it $(docker ps -f name=appnet_db -q) mysql -u root -p	// root kulla
 	mysql> show databases;
 	mysql> create database db_net;
 ```
-
+------
 ```cs
 -- 2 --
 docker node ls
